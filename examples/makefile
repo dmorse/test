@@ -10,6 +10,10 @@ all: $(EXES)
 
 clean:
 	rm -f $(EXES) 
+
+veryclean:
+	make clean
+	rm -f config.mk
 #-----------------------------------------------------------------------
 DEFINES=
 INCLUDES=-I ../

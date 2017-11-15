@@ -29,7 +29,7 @@
 *
 * The test methods defined by a UnitTest are run by an 
 * associated subclass of TestRunner. Each test method of a 
-* UnitTest must be added to the associated TestRunner.  The 
+* UnitTest must be added to the associated TestRunner. The 
 * run() method of a TestRunner calls all of the associated 
 * test methods in the order in which they were added, and 
 * counts the number of successful and failed tests. 
@@ -81,6 +81,10 @@ public:
 
    /**
    * Set file prefix.
+   *
+   * This function is called by the UnitTestRunner::method(int i) function
+   * to set the filePrefix of the unit test equal to that of the runner
+   * after construction but before running the relevant test method.
    *
    * \param prefix string to be prepended to input and output file names.
    */
