@@ -255,15 +255,15 @@ TestRunner::TestRunner()
    nFailure_(0),
    isIoProcessor_(0)
    #ifdef TEST_MPI
-   ,mpiRank_(0),
-   mpiSize_(0)
+   , mpiRank_(0)
+   , mpiSize_(0)
    #endif
 {
     #ifndef TEST_MPI
     isIoProcessor_ = true; 
     #else
-    mpiRank_ = MPI::COMM_WORLD.Get_rank();
-    mpiSize_ = MPI::COMM_WORLD.Get_size();
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank_);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpiSize_);
     if (mpiRank_ == 0) {
        isIoProcessor_ = true; 
     } else {

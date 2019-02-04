@@ -106,7 +106,7 @@ public:
    *
    * \param communicator MPI communicator object
    */
-   void setCommunicator(MPI::Intracomm& communicator);
+   void setCommunicator(MPI_Comm communicator);
 
    /**
    * Return rank of this processor in communicator.
@@ -121,7 +121,7 @@ public:
    /**
    * Return the communicator by reference.
    */
-   MPI::Intracomm& communicator();
+   MPI_Comm communicator();
    #endif
 
 protected:
@@ -199,10 +199,13 @@ private:
 
    #ifdef TEST_MPI
    /// Communicator for MPI jobs.
-   MPI::Intracomm* communicatorPtr_;
+   MPI_Comm communicator_;
 
    /// Mpi rank of this processor within communicator.
    int  mpiRank_;
+
+   /// Does this processor have an MPI communicator?
+   bool hasCommunicator_;
    #endif
 
    /// Verbosity index
@@ -218,15 +221,16 @@ private:
 */
 UnitTest::UnitTest() :
    #ifdef TEST_MPI      
-   communicatorPtr_(0),
+   communicator_(0),
    mpiRank_(-1),
+   hasCommunicator_(false),
    #endif
    verbose_(0),
    isIoProcessor_(true)
 {
    #ifdef TEST_MPI
    // Set the communicator to COMM_WORLD by default.
-   setCommunicator(MPI::COMM_WORLD);
+   setCommunicator(MPI_COMM_WORLD);
    #endif
 }
 
@@ -278,10 +282,11 @@ bool UnitTest::isIoProcessor() const
 /*
 * Set the MPI communicator.
 */
-void UnitTest::setCommunicator(MPI::Intracomm& communicator)
+void UnitTest::setCommunicator(MPI_Comm communicator)
 {  
-   communicatorPtr_ = &communicator; 
-   mpiRank_ = communicator.Get_rank();
+   communicator_ = communicator; 
+   hasCommunicator_ = true;
+   MPI_Comm_rank(communicator, &mpiRank_);
    if (mpiRank_ == 0) {
       isIoProcessor_ = true; 
    } else {
@@ -299,13 +304,13 @@ int UnitTest::mpiRank()
 * Does this test have a communicator?
 */
 bool UnitTest::hasCommunicator()
-{  return bool(communicatorPtr_ != 0); }
+{  return hasCommunicator_; }
 
 /*
 * Return the communicator by reference.
 */
-MPI::Intracomm& UnitTest::communicator()
-{  return *communicatorPtr_; }
+MPI_Comm UnitTest::communicator()
+{  return communicator_; }
 #endif
 
 /*

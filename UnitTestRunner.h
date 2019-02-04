@@ -245,7 +245,8 @@ void UnitTestRunner<UnitTestClass>::method(unsigned int i)
 
    #ifdef TEST_MPI
    // Process MPI Tests from all processors
-   MPI::COMM_WORLD.Barrier();
+   MPI_Barrier(MPI_COMM_WORLD);
+   MPI_Status status;
    if (mpiRank() == 0) {
       results_[0] = result; // Result on processor 0
       if (results_[0] == 0) {
@@ -257,14 +258,17 @@ void UnitTestRunner<UnitTestClass>::method(unsigned int i)
       }
       for (int i=1; i < mpiSize(); ++i) {
          // Receive result results_[i] of test on processor i.
-         MPI::COMM_WORLD.Recv(&(results_[i]), 1, MPI_INT, i, i);
+         MPI_Recv(&(results_[i]), 1, MPI_INT, i, i, 
+                  MPI_COMM_WORLD, &status);
          // If the test failed on processor i
          if (results_[i] == 0) {
             result = 0; // fails (==0) if failure on any processor
             // Send permission to print failure on processor i
-            MPI::COMM_WORLD.Send(&(results_[i]), 1, MPI_INT, i, mpiSize() + i);
+            MPI_Send(&(results_[i]), 1, MPI_INT, i, mpiSize() + i, 
+                     MPI_COMM_WORLD);
             // Receive confirmation that processor i completed printing
-            MPI::COMM_WORLD.Recv(&(results_[i]), 1, MPI_INT, i, 2*mpiSize() + i);
+            MPI_Recv(&(results_[i]), 1, MPI_INT, i, 2*mpiSize() + i, 
+                     MPI_COMM_WORLD, &status);
          }
       }
       // Record success on master (rank == 0) iff success on all processors
@@ -277,12 +281,12 @@ void UnitTestRunner<UnitTestClass>::method(unsigned int i)
       std::cout.flush();
    } else {   // Slave node
       // Send result of test on this processor to master, tag = mpiRank().
-      MPI::COMM_WORLD.Send(&result, 1, MPI_INT, 0, mpiRank());
+      MPI_Send(&result, 1, MPI_INT, 0, mpiRank(), MPI_COMM_WORLD);
       // If test failed on this processor
       if (result == 0) {
          // Receive permission to print failure statement
-         MPI::COMM_WORLD.Recv(&result, 1, MPI_INT, 0, 
-                              mpiSize() + mpiRank());
+         MPI_Recv(&result, 1, MPI_INT, 0, 
+                  mpiSize() + mpiRank(), MPI_COMM_WORLD, &status);
          std::cout.flush();
          std::cout << std::endl;
          std::cout << " Failure  on Processor " << mpiRank() 
@@ -290,11 +294,11 @@ void UnitTestRunner<UnitTestClass>::method(unsigned int i)
          std::cout << exception.message() << std::endl;
          std::cout.flush();
          // Confirm completion of print.
-         MPI::COMM_WORLD.Send(&result, 1, MPI_INT, 0, 
-                              2*mpiSize() + mpiRank());
+         MPI_Send(&result, 1, MPI_INT, 0, 
+                  2*mpiSize() + mpiRank(), MPI_COMM_WORLD);
       }
    }
-   MPI::COMM_WORLD.Barrier();
+   MPI_Barrier(MPI_COMM_WORLD);
    #endif // ifdef TEST_MPI
 
 }

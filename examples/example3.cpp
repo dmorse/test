@@ -67,8 +67,8 @@ TEST_END(TestA)
 
 int main() 
 { 
-   MPI::Init();
+   MPI_Init();
    TestA_Runner test;
    test.run();
-   MPI::Finalize();
+   MPI_Finalize();
 }
