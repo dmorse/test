@@ -314,7 +314,7 @@ MPI::Intracomm& UnitTest::communicator()
 void UnitTest::printMethod(const char* methodName)
 {  if (isIoProcessor()) {
       std::cout << std::endl;
-      std::cout << std::string(methodName); 
+      std::cout << std::string(methodName) << std::flush; 
    }
 }
 
